@@ -1,8 +1,7 @@
 // @ts-nocheck
 const eval = require("eval");
 const {
-	readFileSync,
-	readdirSync
+	readFileSync
 } = require("fs");
 
 const api = {
@@ -17,26 +16,27 @@ const api = {
 			));
 		}).join('\n'),
 	render: (path, model = {}) =>
-		_template.render(path, {
-			parent: model
-		}),
+		_template.render(path, model),
 };
 
-const _config = {
-	extension: "jst",
-	layout: "layout"
+let _config = {
+	extension: ".jst",
+	directory: "./views"
 };
-
 const _views = {};
 
 const wrap = string =>
 	`module.exports = \`${string}\``;
 
+const normalize = path =>
+	path.endsWith("/") ? path : path + '/';
+
 const _template = {
+	init: config => Object.assign(_config, config || {}) && _template,
 	create: (string, filename = 'anonymous') =>
 		(model = {}) => eval(wrap(string), filename, Object.assign({}, model, api), false),
 	read: path =>
-		_template.create(readFileSync(path), path),
+		_template.create(readFileSync((path.startsWith('/') ? path : normalize(_config.directory) + path) + _config.extension), path),
 	open: path =>
 		_views[path] || (_views[path] = _template.read(path)),
 	render: (path, model) => _template.open(path)(model),
@@ -52,25 +52,6 @@ const _template = {
 				}
 			));
 	},
-	views: (directory, config = {}) => {
-		config = Object.assign({}, _config, config);
-		const layout_filename = `${config.layout}.${config.extension}`;
-		const layout = _template.layout(_template.open(`${directory}/${layout_filename}`));
-		
-		const views = Object.create({
-			render(view, model, overrides) {
-				return layout(this[view], model, overrides);
-			}
-		});
-		
-		readdirSync(directory)
-			.filter(entry => entry.endsWith(config.extension) && x !== layout_filename)
-			.map(entry => entry.substring(0, entry.length - (config.extension.length + 1)))
-			.forEach(entry => views[entry] = _template.open(`${directory}/${entry}.${config.extension}`));
-		
-		console.log(views);
-		return views;
-	}
 };
 
 module.exports = _template;
