@@ -1,0 +1,28 @@
+{
+  "name": "zengine",
+  "version": "1.0.0",
+  "description": "Super simple templates leveraging template strings",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://dumpstergoon@github.com/dumpstergoon/template-engine.git"
+  },
+  "keywords": [
+    "templates",
+    "views",
+    "ui",
+    "template"
+  ],
+  "author": "Graham Robertson - SkyCrate Ltd",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/dumpstergoon/template-engine/issues"
+  },
+  "homepage": "https://github.com/dumpstergoon/template-engine#readme",
+  "dependencies": {
+    "eval": "^0.1.4"
+  }
+}
