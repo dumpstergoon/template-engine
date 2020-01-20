@@ -4,13 +4,20 @@ const {
 	readFileSync
 } = require("fs");
 
+let _config = {
+	directory: './views',
+	extension: '.jst'
+};
+
+const _views = {};
+
 const api = {
 	iterate: (list, path, model = {}, template = _template.open(path)) => {
 		let output = "";
 		for (const index in list) {
-			output += template(Object.assign({},
-				model,
+			output += template(view(
 				list[index],
+				model,
 				{
 					index: index
 				}
@@ -19,15 +26,27 @@ const api = {
 		}
 		return output;
 	},
+	filter: (list, filter) => {
+		if (list.constructor === Array)
+			return list.filter(filter);
+		
+		let output = {};
+		for (const index in list) {
+			let item = list[index];
+			if (filter(item, index, list))
+				output[index] = item;
+		}
+		return output;
+	},
 	render: (path, model = {}) =>
-		_template.render(path, model),
+		_template.render(path, view(model)),
 };
 
-let _config = {
-	directory: './views',
-	extension: '.jst'
+const view = (model = {}, ...defaults) => {
+	return Object.assign({
+		item: model
+	}, ...defaults);
 };
-const _views = {};
 
 const wrap = string =>
 	`module.exports = \`${string}\``;
@@ -55,12 +74,11 @@ const _template = {
 	render: (path, model) => _template.open(path)(model),
 	layout: (_path, defaults = {}) => {
 		return (path, model = {}) =>
-			_template.open(_path)(Object.assign(
-				{},
-				defaults,
+			_template.open(_path)(view(
 				model,
+				defaults,
 				{
-					placeholder: _template.render(path, Object.assign({}, model, defaults))
+					placeholder: _template.render(path, view(model, defaults)),
 				}
 			));
 	},
