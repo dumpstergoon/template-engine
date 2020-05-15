@@ -1,18 +1,20 @@
 // @ts-nocheck
 const eval = require("eval");
+const o = (input, output = {...(input || {})}) => output;
+
 const {
 	readFileSync
 } = require("fs");
 
 let _config = {
 	directory: './views',
-	extension: '.jst'
+	extension: '.jst',
 };
 
 const _views = {};
 
 const api = {
-	iterate: (list, path, model = {}, template = _template.open(path)) => {
+	iterate: (list, path, model = o(), template = _template.open(path)) => {
 		let output = "";
 		for (const index in list) {
 			output += template(view(
@@ -38,11 +40,11 @@ const api = {
 		}
 		return output;
 	},
-	render: (path, model = {}) =>
+	render: (path, model = o()) =>
 		_template.render(path, view(model)),
 };
 
-const view = (model = {}, ...defaults) => {
+const view = (model = o(), ...defaults) => {
 	return Object.assign({
 		item: model
 	}, ...defaults);
@@ -60,12 +62,12 @@ const _template = {
 			Object.assign(_config, config) :
 			{
 				directory: '',
-				extension: ''
+				extension: '',
 			}) && _template,
 	express: render => (path, context, callback) =>
 		callback(null, render(path.split(_config.extension)[0], context)),
 	create: (string, filename = 'anonymous') =>
-		(model = {}) => eval(wrap(string), filename, Object.assign({}, model, api), false),
+		(model = o()) => eval(wrap(string), filename, Object.assign({}, model, api), false),
 	read: path =>
 		_template.create(readFileSync((path.startsWith('/') ? path : normalize(_config.directory) + path) + _config.extension), path),
 	open: path =>
