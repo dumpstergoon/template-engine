@@ -14,24 +14,26 @@ let _config = {
 const _views = {};
 
 const api = {
-	iterate: (list, path, model = o(), template = _template.open(path)) => {
+	iterate: (list, path, model = o(), wrap = '', wrapL = wrap && `<${wrap}>`, wrapR = wrap && `</${wrap}>`, template = _template.open(path)) => {
 		let output = "";
 		for (const index in list) {
+			output += wrapL;
 			output += template(view(
 				list[index],
-				model,
 				{
-					index: index
+					index,
+					...model
 				}
 			));
+			output += wrapR;
 			output += '\n';
 		}
 		return output;
 	},
+	list: (list, path, alternate, model = o()) => list && list.length ? api.iterate(list, path, model, "li") : api.render(alternate, model),
 	filter: (list, filter) => {
 		if (list.constructor === Array)
 			return list.filter(filter);
-		
 		let output = {};
 		for (const index in list) {
 			let item = list[index];
@@ -44,9 +46,9 @@ const api = {
 		_template.render(path, view(model)),
 };
 
-const view = (model = o(), ...defaults) => {
+const view = (item = o(), ...defaults) => {
 	return Object.assign({
-		item: model
+		item
 	}, ...defaults);
 };
 
